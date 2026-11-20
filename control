@@ -1,0 +1,9 @@
+Package: com.plato.platodns
+Name: PlatoDNS
+Version: 1.0.0
+Architecture: iphoneos-arm64
+Description: Standalone PlatoDNS — floating menu to generate and share encrypted DNS (DoH/DoT) configuration profiles. No jailbreak, no Substrate/ElleKit dependency; injected directly into a host app.
+Maintainer: Plato
+Author: Plato
+Section: Networking
+Depends:
