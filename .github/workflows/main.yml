@@ -1,0 +1,51 @@
+name: Build PlatoDNS (standalone dylib)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Theos
+        env:
+          THEOS: /opt/theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$THEOS"
+          echo "THEOS=$THEOS" >> "$GITHUB_ENV"
+
+      - name: Install iOS SDK
+        env:
+          THEOS: /opt/theos
+        run: |
+          git clone --quiet -n https://github.com/theos/sdks.git /tmp/sdks
+          cd /tmp/sdks
+          git sparse-checkout set --no-cone 'iPhoneOS14.5.sdk'
+          git checkout master
+          mkdir -p "$THEOS/sdks"
+          mv iPhoneOS14.5.sdk "$THEOS/sdks/"
+
+      - name: Build dylib
+        env:
+          THEOS: /opt/theos
+        run: |
+          make package ARCHS="arm64 arm64e" FINALPACKAGE=1
+
+      - name: Locate build output
+        run: |
+          mkdir -p dist
+          find . -name "*.dylib" -path "*/obj/*" -exec cp {} dist/ \;
+          find . -name "*.deb" -exec cp {} dist/ \;
+          ls -la dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlatoDNS-standalone
+          path: dist/*
+          if-no-files-found: error
